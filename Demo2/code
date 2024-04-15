@@ -1,0 +1,43 @@
+let mic, fft;
+
+function setup() {
+  createCanvas(window.innerWidth, window.innerHeight);
+  mic = new p5.AudioIn();
+  mic.start();
+  fft = new p5.FFT(0.9, 256);
+  fft.setInput(mic);
+  noFill();
+}
+
+function draw() {
+  background('#F4FCFF'); // Soft light blue background
+  let waveform = fft.waveform();
+
+  // Adding translucency to create a veil-like effect
+  stroke('rgba(56, 206, 152, 0.5)'); // Green color with opacity
+  strokeWeight(4);
+  
+  // Drawing two mirrored waveforms for an artistic effect
+  beginShape();
+  for (let i = 0; i < waveform.length; i++) {
+    let x = map(i, 0, waveform.length, 0, width);
+    let y = map(waveform[i], -1, 1, height / 2, 0);
+    vertex(x, y);
+  }
+  endShape();
+
+  beginShape();
+  for (let i = 0; i < waveform.length; i++) {
+    let x = map(i, 0, waveform.length, 0, width);
+    let y = map(waveform[i], -1, 1, height / 2, height);
+    vertex(x, y);
+  }
+  endShape();
+
+  // Applying a blur effect to enhance the mist-like appearance
+  filter(BLUR, 4);
+}
+
+function mousePressed() {
+  userStartAudio();
+}
