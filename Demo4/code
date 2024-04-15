@@ -1,0 +1,46 @@
+let mic, fft;
+let smoothVol = 0;
+
+function setup() {
+  createCanvas(window.innerWidth, window.innerHeight);
+  mic = new p5.AudioIn();
+  mic.start();
+  // Use more detailed analysis with lower smoothing
+  fft = new p5.FFT(0.2, 1024);
+  fft.setInput(mic);
+  noFill();
+}
+
+function draw() {
+  background('#F4FCFF'); // Soft light blue background
+  let waveform = fft.waveform();
+  let volume = fft.analyze(); // Get volume for dynamic scaling
+  let currentVol = max(volume) / 255; // Normalize volume to 0-1
+
+  // Smooth volume changes using lerp for less jitter
+  smoothVol = lerp(smoothVol, currentVol, 0.1);
+
+  // Using fully opaque stroke for maximum visibility
+  stroke('rgba(56, 206, 152, 1)');
+  strokeWeight(10);
+
+  // Adjust stroke weight based on volume to minimize jitter when quiet
+  let dynamicStroke = map(smoothVol, 0, 1, 2, 10);
+  strokeWeight(dynamicStroke);
+
+  beginShape();
+  for (let i = 0; i < waveform.length; i++) {
+    let x = map(i, 0, waveform.length, 0, width);
+    // Dynamically scale waveform drawing based on smoothed volume
+    let y = map(waveform[i], -1, 1, -height * smoothVol, height * smoothVol);
+    vertex(x, height/2 - y);
+  }
+  endShape();
+
+  // Apply a more intense blur for aesthetic effect
+  filter(BLUR, 10);
+}
+
+function mousePressed() {
+  userStartAudio(); // Ensure audio starts on user interaction
+}
