@@ -1,0 +1,37 @@
+let mic, fft;
+
+function setup() {
+  createCanvas(window.innerWidth, window.innerHeight);
+  mic = new p5.AudioIn();
+  mic.start();
+  // Lower smoothing for more sensitive frequency capture
+  fft = new p5.FFT(0.3, 1024);
+  fft.setInput(mic);
+  noFill();
+}
+
+function draw() {
+  background('#F4FCFF'); // Soft light blue background
+  let waveform = fft.waveform();
+
+  // Using more opaque and thicker stroke for clearer visualization
+  stroke('rgba(56, 206, 152, 1)'); // Fully opaque green color
+  strokeWeight(10); // Thicker line for more pronounced waveform
+  
+  // Dramatically amplify the waveform display
+  beginShape();
+  for (let i = 0; i < waveform.length; i++) {
+    let x = map(i, 0, waveform.length, 0, width);
+    // Scale up the waveform amplitude significantly
+    let y = map(waveform[i], -1, 1, -height/2, height/2);
+    vertex(x, height/2 - y); // Adjusting centering
+  }
+  endShape();
+
+  // Optional: Applying a more intense blur for aesthetic effect
+  filter(BLUR, 12);
+}
+
+function mousePressed() {
+  userStartAudio(); // Ensure audio starts on user interaction
+}
